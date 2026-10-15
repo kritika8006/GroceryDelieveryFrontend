@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRightIcon } from "lucide-react";
-import { dummyProducts } from "../../assets/assets";
+import { api } from "../../lib/api";
 import { Product } from "../../types";
 import ProductCard from "./ProductCard";
 
@@ -9,7 +9,10 @@ const PopularProducts = () => {
   const [products, setProducts] = useState<Product[]>([]);
 
   useEffect(() => {
-    setProducts(dummyProducts.slice(0, 10));
+    api
+      .getProducts({ sort: "rating", limit: "10" })
+      .then((data) => setProducts(data.products || []))
+      .catch(() => setProducts([]));
   }, []);
 
   return (

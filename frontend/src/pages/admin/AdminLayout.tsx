@@ -4,11 +4,11 @@ import Navbar from "../../components/Navbar";
 
 const AdminLayout = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-orange-50 to-pink-50">
+    <div className="min-h-screen bg-app-canvas">
       <Navbar />
-      <div className="flex">
+           <div className="flex flex-col md:flex-row">
         <AdminSidebar />
-        <main className="flex-1 p-8">
+        <main className="flex-1 p-4 md:p-8 overflow-x-auto">
           <Outlet />
         </main>
       </div>

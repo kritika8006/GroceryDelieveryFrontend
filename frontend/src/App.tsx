@@ -3,6 +3,8 @@ import { Routes, Route } from 'react-router-dom';
 
 // Auth & Main Pages
 import Login from './pages/Login';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 import AppLayout from './pages/AppLayout';
 import Home from './pages/Home';
 import Products from './pages/Products';
@@ -14,6 +16,8 @@ import MyOrders from './pages/MyOrders';
 import OrderTracking from './pages/OrderTracking';
 import Addresses from './pages/Addresses';
 import ProtectedRoute from './components/ProtectedRoute';
+import AdminRoute from './components/AdminRoute';
+import RiderTracker from './pages/admin/RiderTracker';
 
 // Admin Pages
 import AdminLayout from './pages/admin/AdminLayout';
@@ -42,14 +46,19 @@ const App = () => {
       <Routes>
         {/* Auth pages */}
         <Route path='/login' element={<Login />} />
+        <Route path='/forgot-password' element={<ForgotPassword />} />
+        <Route path='/reset-password/:token' element={<ResetPassword />} />
 
         {/* Admin Pages (Nested under AdminLayout) */}
-        <Route path="/admin" element={<AdminLayout />}>
-          <Route index element={<AdminDashboard />} />
-          <Route path="add-product" element={<AddProduct />} />
-          <Route path="products" element={<AdminProducts />} />
-          <Route path="orders" element={<AdminOrders />} />
-          <Route path="delivery" element={<DeliveryPartners />} />
+        <Route element={<AdminRoute />}>
+          <Route path="/rider/:id" element={<RiderTracker />} />
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route index element={<AdminDashboard />} />
+            <Route path="add-product" element={<AddProduct />} />
+            <Route path="products" element={<AdminProducts />} />
+            <Route path="orders" element={<AdminOrders />} />
+            <Route path="delivery" element={<DeliveryPartners />} />
+          </Route>
         </Route>
 
         {/* Main pages - With Navbar/Footer */}

@@ -13,18 +13,18 @@ const AdminSidebar = () => {
   ];
 
   return (
-    <div className="w-64 bg-white m-4 rounded-3xl shadow-[0_10px_40px_-15px_rgba(0,0,0,0.1)] p-6 flex flex-col justify-between">
+    <div className="w-full md:w-64 md:shrink-0 bg-white m-4 rounded-3xl border border-app-border shadow-[0_10px_40px_-15px_rgba(0,0,0,0.08)] p-4 md:p-6 flex flex-col md:justify-between">
       <div>
-        <div className="flex items-center gap-3 font-bold text-xl mb-10 text-[#1A2E22] px-2">
-          <Shield size={24} /> Admin Panel
+        <div className="flex items-center gap-3 font-serif text-xl mb-4 md:mb-10 text-app-green px-2">
+          <Shield size={24} className="text-app-clay" /> Admin Panel
         </div>
-        <div className="space-y-2">
+        <div className="flex md:flex-col gap-1 md:gap-2 overflow-x-auto md:overflow-visible pb-1">
           {menuItems.map((item) => (
             <NavLink 
               key={item.path} to={item.path} end={item.path === "/admin"}
-              className={({ isActive }) => `flex items-center gap-3 p-4 rounded-2xl transition ${isActive ? "bg-[#1A2E22] text-white shadow-lg" : "text-gray-500 hover:bg-gray-50"}`}
+              className={({ isActive }) => `flex items-center gap-3 p-3 md:p-4 rounded-2xl transition-colors whitespace-nowrap shrink-0 ${isActive ? "bg-app-green text-white" : "text-app-text-light hover:bg-app-canvas"}`}
             >
-              <item.icon size={20} /> {item.label}
+              <item.icon size={20} /> <span className="text-sm md:text-base">{item.label}</span>
             </NavLink>
           ))}
         </div>
@@ -33,7 +33,7 @@ const AdminSidebar = () => {
       {/* 3. Updated Exit button with onClick handler */}
       <button 
         onClick={() => navigate("/")} 
-        className="flex items-center gap-3 p-4 text-red-500 hover:bg-red-50 rounded-2xl transition"
+        className="hidden md:flex items-center gap-3 p-4 text-app-clay hover:bg-app-clay/5 rounded-2xl transition-colors"
       >
         <LogOut size={20} /> Exit
       </button>

@@ -1,14 +1,16 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { ChevronDown, Loader2 } from "lucide-react";
-import { dummyProducts, categoriesData } from "../assets/assets";
+import { categoriesData } from "../assets/assets";
 import ProductCard from "../components/Home/ProductCard";
+import { api } from "../lib/api";
+import type { Product } from "../types";
 
 // Loading component with lucid-react spinner
 const Loading = () => (
   <div className="flex flex-col items-center justify-center min-h-[400px] w-full">
-    <Loader2 className="w-12 h-12 text-[#1A2E22] animate-spin mb-4" />
-    <p className="text-[#1A2E22] font-semibold animate-pulse">Loading your products...</p>
+    <Loader2 className="w-12 h-12 text-app-clay animate-spin mb-4" />
+    <p className="text-app-green font-medium animate-pulse">Loading your products...</p>
   </div>
 );
 
@@ -32,27 +34,41 @@ const Products = () => {
     setMaxPriceInput(maxPriceParam);
   }, [minPriceParam, maxPriceParam]);
 
-  // Simulate data fetching delay when dependencies change
-  useEffect(() => {
-    setLoading(true);
-    const timer = setTimeout(() => setLoading(false), 800);
-    return () => clearTimeout(timer);
-  }, [category, sort, minPriceParam, maxPriceParam]);
+  const [products, setProducts] = useState<Product[]>([]);
 
-  // 1. Filtering Logic (Category + Price Range matching image_8177a4.png)
-  let filteredProducts = dummyProducts.filter((p) => {
-    const matchesCategory = category === "" || p.category === category;
+  // Fetch from the backend whenever category/sort change (server-side),
+  // then apply the price range client-side since the API doesn't filter on it.
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+
+    const params: Record<string, string> = {};
+    if (category) params.category = category;
+    if (sort) params.sort = sort;
+
+    api
+      .getProducts(params)
+      .then((data) => {
+        if (!cancelled) setProducts(data.products || []);
+      })
+      .catch(() => {
+        if (!cancelled) setProducts([]);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [category, sort]);
+
+  // Price range filtering happens client-side on whatever the API returned
+  const filteredProducts = products.filter((p) => {
     const matchesMinPrice = minPriceParam === "" || p.price >= parseFloat(minPriceParam);
     const matchesMaxPrice = maxPriceParam === "" || p.price <= parseFloat(maxPriceParam);
-    return matchesCategory && matchesMinPrice && matchesMaxPrice;
+    return matchesMinPrice && matchesMaxPrice;
   });
-
-  // 2. Sorting Logic matching image_770339.jpg
-  if (sort === "price_asc") filteredProducts.sort((a, b) => a.price - b.price);
-  else if (sort === "price_desc") filteredProducts.sort((a, b) => b.price - a.price);
-  else if (sort === "rating") filteredProducts.sort((a, b) => b.rating - a.rating);
-  else if (sort === "name") filteredProducts.sort((a, b) => a.name.localeCompare(b.name));
-  else filteredProducts.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
   // Function to update single URL Parameters
   const updateFilter = (key: string, value: string) => {
@@ -75,27 +91,26 @@ const Products = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#FDFBF7] py-6">
+    <div className="min-h-screen bg-app-canvas py-6">
       <div className="max-w-7xl mx-auto px-4">
         
-        {/* Breadcrumbs matching top of image_8177a4.png */}
-        <div className="flex items-center gap-2 text-sm text-gray-500 mb-6">
-          <span className="cursor-pointer hover:text-gray-800">🏠</span>
-          <span className="text-gray-300">/</span>
-          <span className="font-medium text-gray-700">All Products</span>
+        {/* Breadcrumbs */}
+        <div className="flex items-center gap-2 text-sm text-app-text-light mb-6">
+          <span className="cursor-pointer hover:text-app-green">🏠</span>
+          <span className="text-app-border">/</span>
+          <span className="font-medium text-app-green">All Products</span>
         </div>
 
-        <div className="flex gap-8">
-          {/* Sidebar Section matching layout of image_8177a4.png */}
-          <aside className="w-64 shrink-0">
-            <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 sticky top-24">
-              
+               <div className="flex flex-col md:flex-row gap-8">
+          {/* Sidebar */}
+          <aside className="w-full md:w-64 md:shrink-0">
+            <div className="bg-white p-6 rounded-3xl shadow-sm border border-app-border md:sticky md:top-24">              
               {/* Category Heading */}
-              <h3 className="font-bold text-gray-800 text-lg mb-4">Categories</h3>
+              <h3 className="font-serif text-app-green text-lg mb-4">Categories</h3>
               <ul className="space-y-1 mb-6">
                 <li 
                   onClick={() => updateFilter("category", "")} 
-                  className={`p-2 px-4 rounded-xl cursor-pointer transition text-sm font-medium ${category === "" ? "bg-[#1A2E22] text-white" : "text-gray-600 hover:bg-gray-50"}`}
+                  className={`p-2 px-4 rounded-xl cursor-pointer transition-colors text-sm font-medium ${category === "" ? "bg-app-green text-white" : "text-app-green/70 hover:bg-app-canvas"}`}
                 >
                   All Categories
                 </li>
@@ -103,17 +118,17 @@ const Products = () => {
                   <li 
                     key={c.slug} 
                     onClick={() => updateFilter("category", c.slug)} 
-                    className={`p-2 px-4 rounded-xl cursor-pointer transition text-sm font-medium ${category === c.slug ? "bg-[#1A2E22] text-white" : "text-gray-600 hover:bg-gray-50"}`}
+                    className={`p-2 px-4 rounded-xl cursor-pointer transition-colors text-sm font-medium ${category === c.slug ? "bg-app-green text-white" : "text-app-green/70 hover:bg-app-canvas"}`}
                   >
                     {c.name}
                   </li>
                 ))}
               </ul>
 
-              <hr className="border-gray-100 mb-6" />
+              <hr className="border-app-border mb-6" />
 
-              {/* Price Range Controls Section matching bottom of image_8177a4.png */}
-              <h3 className="font-bold text-gray-800 text-sm mb-3">Price Range</h3>
+              {/* Price Range Controls */}
+              <h3 className="font-medium text-app-green text-sm mb-3">Price Range</h3>
               <div className="flex items-center gap-2">
                 <input 
                   type="number" 
@@ -123,9 +138,9 @@ const Products = () => {
                     setMinPriceInput(e.target.value);
                     handlePriceChange(e.target.value, maxPriceInput);
                   }}
-                  className="w-full bg-white border border-gray-200 text-sm rounded-xl py-2 px-3 outline-none focus:border-[#1A2E22] transition"
+                  className="w-full bg-white border border-app-border text-sm rounded-xl py-2 px-3 outline-none focus:border-app-clay transition-colors"
                 />
-                <span className="text-gray-400">—</span>
+                <span className="text-app-text-light">—</span>
                 <input 
                   type="number" 
                   placeholder="Max" 
@@ -134,7 +149,7 @@ const Products = () => {
                     setMaxPriceInput(e.target.value);
                     handlePriceChange(minPriceInput, e.target.value);
                   }}
-                  className="w-full bg-white border border-gray-200 text-sm rounded-xl py-2 px-3 outline-none focus:border-[#1A2E22] transition"
+                  className="w-full bg-white border border-app-border text-sm rounded-xl py-2 px-3 outline-none focus:border-app-clay transition-colors"
                 />
               </div>
 
@@ -145,14 +160,13 @@ const Products = () => {
           <main className="flex-1">
             <div className="flex justify-between items-center mb-6">
               <div>
-                <h1 className="text-2xl font-bold text-[#1A2E22]">All Products</h1>
-                <p className="text-gray-500">{loading ? "..." : `${filteredProducts.length} products found`}</p>
+                <h1 className="font-serif text-2xl text-app-green">All Products</h1>
+                <p className="text-app-text-light">{loading ? "..." : `${filteredProducts.length} products found`}</p>
               </div>
               
-              {/* Dropdown Custom Select Custom Wrapper */}
-              <div className="relative bg-white rounded-xl border border-gray-200 focus-within:border-[#1A2E22] transition">
+              <div className="relative bg-white rounded-xl border border-app-border focus-within:border-app-clay transition-colors">
                 <select 
-                  className="appearance-none bg-transparent py-2 pl-4 pr-10 outline-none cursor-pointer text-sm font-medium text-gray-700" 
+                  className="appearance-none bg-transparent py-2 pl-4 pr-10 outline-none cursor-pointer text-sm font-medium text-app-green" 
                   value={sort}
                   onChange={(e) => updateFilter("sort", e.target.value)}
                 >
@@ -162,11 +176,10 @@ const Products = () => {
                   <option value="rating">Top Rated</option>
                   <option value="name">A → Z</option>
                 </select>
-                <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500 pointer-events-none" />
+                <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-app-text-light pointer-events-none" />
               </div>
             </div>
             
-            {/* View Switching Conditionally via Loading State */}
             {loading ? (
               <Loading />
             ) : filteredProducts.length > 0 ? (
@@ -176,7 +189,7 @@ const Products = () => {
                 ))}
               </div>
             ) : (
-              <div className="flex justify-center py-20 text-gray-500 font-medium bg-white rounded-2xl border border-dashed border-gray-200">
+              <div className="flex justify-center py-20 text-app-text-light font-medium bg-white rounded-2xl border border-dashed border-app-border">
                 No products found matching your active criteria.
               </div>
             )}

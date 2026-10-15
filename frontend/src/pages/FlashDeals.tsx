@@ -1,17 +1,23 @@
-
+import { useEffect, useState } from "react";
 import ProductCard from "../components/Home/ProductCard";
-import { dummyProducts } from '../assets/assets';
+import { api } from "../lib/api";
+import type { Product } from "../types";
 
 const FlashDeals = () => {
-  const flashProducts = dummyProducts;
+  const [flashProducts, setFlashProducts] = useState<Product[]>([]);
+
+  useEffect(() => {
+    api
+      .getDeals()
+      .then((data) => setFlashProducts(data))
+      .catch(() => setFlashProducts([]));
+  }, []);
 
   return (
     <div className="w-full bg-[#FDFBF7] py-8">
-      {/* Updated Flash Deals Header with custom 4-stop gradient */}
-      <div 
+      <div
         className="w-full py-12 px-4 mb-8 text-center shadow-lg"
         style={{
-          // Dark Green -> Vegetable Green -> Light Green -> White
           background: 'linear-gradient(135deg, #1B3022 0%, #2E7D32 35%, #81C784 75%, #FFFFFF 100%)'
         }}
       >
@@ -23,13 +29,16 @@ const FlashDeals = () => {
         </p>
       </div>
 
-      {/* Product Grid */}
       <div className="max-w-7xl mx-auto px-4">
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-6">
-          {flashProducts.map((product) => (
-            <ProductCard key={product._id} product={product} />
-          ))}
-        </div>
+        {flashProducts.length === 0 ? (
+          <p className="text-center text-gray-500">No active deals right now — check back soon.</p>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-6">
+            {flashProducts.map((product) => (
+              <ProductCard key={product._id} product={product} />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

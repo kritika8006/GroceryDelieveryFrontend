@@ -1,9 +1,13 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Bike } from "lucide-react";
-import { assets } from "../assets/assets"; // Path check kar lein
+import toast from "react-hot-toast";
+import { assets } from "../assets/assets";
+import { useAuth } from "../context/AuthContext";
 
 const Login = () => {
+  const navigate = useNavigate();
+  const { login, signup } = useAuth();
   const [isLoginState, setIsLoginState] = useState(true);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -13,46 +17,55 @@ const Login = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    // 1 second wait simulation
-    setTimeout(() => {
+    try {
+      if (isLoginState) {
+        await login(email, password);
+      } else {
+        await signup(name, email, password);
+      }
+      navigate("/");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Something went wrong");
+    } finally {
       setLoading(false);
-      window.location.href = "/";
-    }, 1000);
+    }
   };
 
   return (
     <div className="min-h-screen flex">
       {/* --- Left Side (Hero Section) --- */}
-      <div className="hidden lg:flex lg:w-1/2 bg-green-900 relative items-center justify-center">
+      <div className="hidden lg:flex lg:w-1/2 bg-app-green relative items-center justify-center overflow-hidden">
         <img
           src={assets.hero_bg}
           alt="Grocery Background"
-          className="absolute inset-0 object-cover h-full w-full opacity-30"
+          className="absolute inset-0 object-cover h-full w-full opacity-25"
         />
+        <div className="absolute inset-0 bg-gradient-to-t from-app-green via-app-green/40 to-transparent" />
         <div className="relative text-center px-12 text-white z-10">
-          <h2 className="text-4xl font-semibold mb-4">Welcome back to Instacart</h2>
-          <p className="text-lg">Fresh groceries and organic produce, delivered to your doorstep.</p>
+          <p className="text-app-gold text-sm font-medium mb-4 tracking-wide">Farm-fresh, organic, delivered today</p>
+          <h2 className="font-serif text-4xl mb-4">Welcome back to Instacart</h2>
+          <p className="text-lg text-white/75">Fresh groceries and organic produce, delivered to your doorstep.</p>
         </div>
       </div>
 
       {/* --- Right Side (Form Section) --- */}
-      <div className="flex-1 flex items-center justify-center px-4 py-12 bg-[#F9F7F2]">
+      <div className="flex-1 flex items-center justify-center px-4 py-12 bg-app-canvas">
         <div className="w-full max-w-md">
           {/* Form Header */}
           <div className="text-center mb-8">
             <Link to="/" className="inline-flex items-center gap-2 mb-6">
-              <Bike className="size-8 text-green-700" />
-              <span className="text-2xl font-semibold text-green-700">Instacart</span>
+              <Bike className="size-8 text-app-clay" />
+              <span className="font-serif text-2xl text-app-green">Instacart</span>
             </Link>
 
-            <h1 className="text-2xl font-semibold text-green-700 mb-2">
+            <h1 className="font-serif text-2xl text-app-green mb-2">
               {isLoginState ? "Sign in to your account" : "Sign up for an account"}
             </h1>
-            <p className="text-gray-600">
+            <p className="text-app-text-light">
               {isLoginState ? "Don't have an account?" : "Already have an account?"}
               <button
                 onClick={() => setIsLoginState(!isLoginState)}
-                className="text-orange-500 ml-1 font-semibold hover:text-orange-600 transition-colors"
+                className="text-app-clay ml-1 font-medium hover:text-app-clay-dark transition-colors"
               >
                 {isLoginState ? "Create one" : "Sign in"}
               </button>
@@ -67,7 +80,7 @@ const Login = () => {
                 placeholder="Full Name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-700"
+                className="w-full p-3 border border-app-border rounded-lg outline-none focus:border-app-clay transition-colors"
                 required
               />
             )}
@@ -76,7 +89,7 @@ const Login = () => {
               placeholder="Email Address"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-700"
+              className="w-full p-3 border border-app-border rounded-lg outline-none focus:border-app-clay transition-colors"
               required
             />
             <input
@@ -84,14 +97,21 @@ const Login = () => {
               placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-700"
+              className="w-full p-3 border border-app-border rounded-lg outline-none focus:border-app-clay transition-colors"
               required
             />
+            {isLoginState && (
+  <div className="text-right">
+    <Link to="/forgot-password" className="text-sm text-app-text-light hover:text-app-clay transition-colors">
+      Forgot password?
+    </Link>
+  </div>
+)}
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-[#1B3022] text-white p-3 rounded-lg font-bold hover:bg-green-900 transition-all"
+              className="w-full bg-app-green text-white p-3 rounded-lg font-medium hover:bg-app-clay transition-colors disabled:opacity-60"
             >
               {loading ? "Loading..." : isLoginState ? "Sign In" : "Sign Up"}
             </button>

@@ -84,6 +84,16 @@ export interface Order {
     statusHistory: { status: string; timestamp: string; note: string }[];
     deliveryPartner: DeliveryPartner | null;
     deliveryOtp: string;
+    liveLocation?: { lat: number; lng: number; updatedAt?: string };
     isPaid: boolean;
+    createdAt: string;
+}
+
+export interface Review {
+    _id: string;
+    product: string;
+    user: { _id: string; name: string; avatar?: string } | string;
+    rating: number;
+    comment: string;
     createdAt: string;
 }

@@ -1,0 +1,4 @@
+// 6-digit numeric OTP, matching the frontend's OrderTracking OTP display (6 boxes)
+const generateOtp = () => Math.floor(100000 + Math.random() * 900000).toString();
+
+export default generateOtp;

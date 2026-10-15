@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { ArrowLeft, ShoppingCart, Plus, Minus, Home, Star, ArrowRight } from "lucide-react";
-import { dummyProducts } from "../assets/assets";
+import { api } from "../lib/api";
 import { useCart } from "../context/CartContext";
-import DummyReviewsSection from "../assets/DummyReviewsSection";
+import ReviewsSection from "../components/ReviewsSection";
 import ProductCard from "../components/Home/ProductCard";
+import type { Product } from "../types";
 
 const ProductPage = () => {
   const { id } = useParams();
@@ -12,14 +13,26 @@ const ProductPage = () => {
   const { addToCart } = useCart();
   const [quantity, setQuantity] = useState(1);
   const currency = import.meta.env.VITE_CURRENCY_SYMBOL || "$";
-  
-  const product = dummyProducts.find((p) => p._id === id);
-  
-  // Related Products Logic: Filter by category and exclude current product
-  const similarProducts = dummyProducts
-    .filter((p) => p.category === product?.category && p._id !== id)
-    .slice(0, 5);
 
+  const [product, setProduct] = useState<Product | null>(null);
+  const [similarProducts, setSimilarProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!id) return;
+    setLoading(true);
+    api
+      .getProductById(id)
+      .then(async (data: Product) => {
+        setProduct(data);
+        const related = await api.getProducts({ category: data.category });
+        setSimilarProducts((related.products || []).filter((p: Product) => p._id !== id).slice(0, 5));
+      })
+      .catch(() => setProduct(null))
+      .finally(() => setLoading(false));
+  }, [id]);
+
+  if (loading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   if (!product) return <div className="min-h-screen flex items-center justify-center">Product not found.</div>;
 
   return (
@@ -72,23 +85,33 @@ const ProductPage = () => {
 
             <p className="text-3xl font-bold text-gray-900 mb-6">{currency}{product.price.toFixed(2)}</p>
             <p className="text-gray-600 mb-6">{product.description}</p>
-            <p className="text-green-600 font-medium mb-8 flex items-center gap-2">✓ In Stock (100 available)</p>
+            {product.stock > 0 ? (
+              <p className="text-green-600 font-medium mb-8 flex items-center gap-2">
+                ✓ In Stock ({product.stock} available)
+              </p>
+            ) : (
+              <p className="text-red-600 font-medium mb-8 flex items-center gap-2">✕ Out of Stock</p>
+            )}
 
             <div className="flex items-center gap-6">
               <div className="flex items-center gap-4 border rounded-full px-4 py-2 bg-gray-50">
                 <button onClick={() => setQuantity(Math.max(1, quantity - 1))}><Minus size={20} /></button>
                 <span className="font-bold w-8 text-center">{quantity}</span>
-                <button onClick={() => setQuantity(quantity + 1)}><Plus size={20} /></button>
+                <button onClick={() => setQuantity(Math.min(product.stock, quantity + 1))} disabled={quantity >= product.stock}><Plus size={20} /></button>
               </div>
-              <button onClick={() => addToCart(product, quantity)} className="flex-1 bg-[#FF7F11] text-white py-4 rounded-full font-bold hover:bg-orange-600 transition flex items-center justify-center gap-2">
-                <ShoppingCart size={20} /> Add to Cart
+              <button
+                onClick={() => addToCart(product, quantity)}
+                disabled={product.stock === 0}
+                className="flex-1 bg-[#FF7F11] text-white py-4 rounded-full font-bold hover:bg-orange-600 transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <ShoppingCart size={20} /> {product.stock === 0 ? "Out of Stock" : "Add to Cart"}
               </button>
             </div>
           </div>
         </div>
 
         {/* Reviews Section */}
-        <DummyReviewsSection product={product} />
+      <ReviewsSection product={product} />
 
         {/* Related Products Section */}
         {similarProducts.length > 0 && (

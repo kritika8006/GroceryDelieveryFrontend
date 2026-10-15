@@ -23,7 +23,7 @@ const CartSidebar = () => {
           <div className="flex items-center gap-2">
             <ShoppingBagIcon className="size-5" />
             <h2 className="text-lg font-medium">Your Cart</h2>
-            <span className="px-3 py-1 text-xs font-semibold bg-orange-50 text-orange-600 rounded-full">
+            <span className="px-3 py-1 text-xs font-semibold bg-app-clay/10 text-app-clay rounded-full">
               {items.length} items
             </span>
           </div>
@@ -48,11 +48,11 @@ const CartSidebar = () => {
                 
                 {/* Improved Quantity Box */}
                 <div className="flex items-center gap-3 border border-gray-200 rounded-full px-3 py-1.5 shadow-sm">
-                  <button onClick={() => updateQuantity(item.product._id, item.quantity - 1)} className="hover:text-orange-600">
+                  <button onClick={() => updateQuantity(item.product._id, item.quantity - 1)} className="hover:text-app-clay">
                     <Minus className="size-3.5" />
                   </button>
                   <span className="text-sm font-medium w-4 text-center">{item.quantity}</span>
-                  <button onClick={() => updateQuantity(item.product._id, item.quantity + 1)} className="hover:text-orange-600">
+                  <button onClick={() => updateQuantity(item.product._id, item.quantity + 1)} className="hover:text-app-clay">
                     <Plus className="size-3.5" />
                   </button>
                 </div>
@@ -72,7 +72,7 @@ const CartSidebar = () => {
             <div className="flex justify-between mb-4 text-gray-600"><span>Delivery Fee</span><span>{deliveryFee === 0 ? "Free" : `${currency}${deliveryFee}`}</span></div>
             <div className="flex justify-between font-bold text-lg mb-4 text-gray-800"><span>Total</span><span>{currency}{grandTotal.toFixed(2)}</span></div>
             <button 
-      className="w-full bg-teal-600 text-white py-3.5 rounded-xl font-semibold hover:bg-teal-700 transition-all shadow-lg shadow-teal-100" 
+      className="w-full bg-app-green text-white py-3.5 rounded-xl font-medium hover:bg-app-clay transition-colors" 
       onClick={() => { setIsCartOpen(false); navigate("/checkout"); }}
     >
       Checkout
